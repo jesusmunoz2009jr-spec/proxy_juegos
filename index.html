@@ -18,9 +18,9 @@
         }
         .proxy-card {
             background: #1e293b;
-            padding: 40px;
+            padding: 30px;
             border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
             text-align: center;
             width: 100%;
             max-width: 500px;
@@ -28,13 +28,34 @@
         }
         h1 {
             margin-top: 0;
-            font-size: 24px;
+            font-size: 22px;
             color: #38bdf8;
         }
         p {
             color: #94a3b8;
             font-size: 14px;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
+        }
+        .mode-selector {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .mode-btn {
+            background: #0f172a;
+            border: 1px solid #475569;
+            color: #94a3b8;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .mode-btn.active {
+            background: #2563eb;
+            border-color: #2563eb;
+            color: white;
         }
         input[type="text"] {
             width: 100%;
@@ -45,7 +66,7 @@
             color: white;
             font-size: 16px;
             box-sizing: border-box;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             outline: none;
         }
         input[type="text"]:focus {
@@ -66,21 +87,72 @@
         .btn-launch:hover {
             background-color: #1d4ed8;
         }
+        .proxy-frame-container {
+            width: 90vw;
+            height: 85vh;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+        .proxy-frame-container.active {
+            display: flex;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            background: white;
+        }
     </style>
 </head>
 <body>
 
-    <div class="proxy-card">
-        <h1>Portal de Tareas</h1>
-        <p>Introduce la URL del sitio web o juego que deseas abrir de forma camuflada:</p>
+    <!-- Pantalla Principal / Menú de Selección -->
+    <div id="homeView" class="proxy-card">
+        <h1>Portal de Navegación Segura</h1>
+        <p>Selecciona cómo deseas jugar o navegar:</p>
         
+        <div class="mode-selector">
+            <button class="mode-btn active" id="btnModeProxy" onclick="switchMode('proxy')">Modo CroxyProxy</button>
+            <button class="mode-btn" id="btnModeBlank" onclick="switchMode('blank')">Modo Oculto (about:blank)</button>
+        </div>
+
         <input type="text" id="targetUrl" placeholder="https://ejemplo.com/juego">
-        <br>
-        <button class="btn-launch" onclick="launchStealthProxy()">Abrir en Modo Oculto (about:blank)</button>
+        
+        <button class="btn-launch" id="actionBtn" onclick="launchAction()">Iniciar CroxyProxy</button>
+    </div>
+
+    <!-- Contenedor del Modo CroxyProxy embebido dentro de la web -->
+    <div id="proxyView" class="proxy-frame-container">
+        <div style="width: 100%; display: flex; justify-content: space-between; margin-bottom: 10px;">
+            <button onclick="goBackHome()" style="background:#475569; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;">← Volver al Menú</button>
+            <span style="color: #94a3b8; font-size: 14px;">Modo CroxyProxy Activo</span>
+        </div>
+        <iframe id="embeddedProxyFrame"></iframe>
     </div>
 
     <script>
-        function launchStealthProxy() {
+        let currentMode = 'proxy'; // Por defecto empieza en modo croxyproxy web
+
+        function switchMode(mode) {
+            currentMode = mode;
+            const btnProxy = document.getElementById('btnModeProxy');
+            const btnBlank = document.getElementById('btnModeBlank');
+            const actionBtn = document.getElementById('actionBtn');
+
+            if (mode === 'proxy') {
+                btnProxy.classList.add('active');
+                btnBlank.classList.remove('active');
+                actionBtn.innerText = "Iniciar CroxyProxy";
+            } else {
+                btnBlank.classList.add('active');
+                btnProxy.classList.remove('active');
+                actionBtn.innerText = "Abrir en Modo Oculto (about:blank)";
+            }
+        }
+
+        function launchAction() {
             const rawUrl = document.getElementById('targetUrl').value.trim();
             if(!rawUrl) {
                 alert("Por favor, introduce una URL válida.");
@@ -92,38 +164,46 @@
                 formattedUrl = 'https://' + formattedUrl;
             }
 
-            // Abre una pestaña en blanco (about:blank)
-            let stealthWindow = window.open('about:blank', '_blank');
-            
-            if(!stealthWindow || stealthWindow.closed || typeof stealthWindow.closed == 'undefined') {
-                alert("Las ventanas emergentes (pop-ups) están bloqueadas. Habilítalas en tu navegador.");
-                return;
-            }
+            if (currentMode === 'proxy') {
+                // Oculta el menú y muestra el iframe del proxy en la misma pantalla
+                document.getElementById('homeView').style.display = 'none';
+                document.getElementById('proxyView').classList.add('active');
+                document.getElementById('embeddedProxyFrame').src = formattedUrl;
+            } else {
+                // Abre una pestaña nueva completamente limpia (about:blank) con camuflaje escolar
+                let stealthWindow = window.open('about:blank', '_blank');
+                
+                if(!stealthWindow || stealthWindow.closed || typeof stealthWindow.closed == 'undefined') {
+                    alert("Las ventanas emergentes (pop-ups) están bloqueadas. Habilítalas en tu navegador.");
+                    return;
+                }
 
-            // Inyecta la estructura camuflada y el juego dentro de la pestaña oculta
-            let doc = stealthWindow.document;
-            doc.open();
-            doc.write(`
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>Google Classroom</title>
-                    <link rel="icon" href="https://ssl.gstatic.com/classroom/ic_product_classroom_32.png">
-                    <style>
-                        body, html {
-                            margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000;
-                        }
-                        iframe {
-                            width: 100%; height: 100%; border: none;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <iframe src="${formattedUrl}"></iframe>
-                </body>
-                </html>
-            `);
-            doc.close();
+                let doc = stealthWindow.document;
+                doc.open();
+                doc.write(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Google Classroom</title>
+                        <link rel="icon" href="https://ssl.gstatic.com/classroom/ic_product_classroom_32.png">
+                        <style>
+                            body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; }
+                            iframe { width: 100%; height: 100%; border: none; }
+                        </style>
+                    </head>
+                    <body>
+                        <iframe src="${formattedUrl}"></iframe>
+                    </body>
+                    </html>
+                `);
+                doc.close();
+            }
+        }
+
+        function goBackHome() {
+            document.getElementById('proxyView').classList.remove('active');
+            document.getElementById('homeView').style.display = 'block';
+            document.getElementById('embeddedProxyFrame').src = '';
         }
     </script>
 
