@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Google Classroom - Panel Principal</title>
+    <link rel="icon" href="https://ssl.gstatic.com/classroom/ic_product_classroom_32.png">
+    <style>
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .proxy-card {
+            background: #1e293b;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+            border: 1px solid #334155;
+        }
+        h1 {
+            margin-top: 0;
+            font-size: 22px;
+            color: #38bdf8;
+        }
+        p {
+            color: #94a3b8;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .mode-selector {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .mode-btn {
+            background: #0f172a;
+            border: 1px solid #475569;
+            color: #94a3b8;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .mode-btn.active {
+            background: #2563eb;
+            border-color: #2563eb;
+            color: white;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            border: 1px solid #475569;
+            background: #0f172a;
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+            outline: none;
+        }
+        input[type="text"]:focus {
+            border-color: #38bdf8;
+        }
+        .btn-launch {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        .btn-launch:hover {
+            background-color: #1d4ed8;
+        }
+        .view-container {
+            display: none;
+        }
+        .view-container.active {
+            display: block;
+        }
+        /* Estilos para el visor CroxyProxy dentro de la web */
+        .proxy-frame-container {
+            width: 90vw;
+            height: 85vh;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+        .proxy-frame-container.active {
+            display: flex;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            background: white;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Pantalla de Selección e Inicio -->
+    <div id="homeView" class="proxy-card">
+        <h1>Portal de Navegación Segura</h1>
+        <p>Selecciona cómo deseas jugar o navegar:</p>
+        
+        <div class="mode-selector">
+            <button class="mode-btn active" id="btnModeProxy" onclick="switchMode('proxy')">Modo CroxyProxy (En la web)</button>
+            <button class="mode-btn" id="btnModeBlank" onclick="switchMode('blank')">Modo Oculto (about:blank)</button>
+        </div>
+
+        <input type="text" id="targetUrl" placeholder="https://ejemplo.com/juego">
+        
+        <button class="btn-launch" id="actionBtn" onclick="launchAction()">Iniciar CroxyProxy</button>
+    </div>
+
+    <!-- Contenedor si elige ver el proxy directamente en la web -->
+    <div id="proxyView" class="proxy-frame-container">
+        <div style="width: 100%; display: flex; justify-content: space-between; margin-bottom: 10px;">
+            <button onclick="goBackHome()" style="background:#475569; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;">← Volver al Menú</button>
+            <span style="color: #94a3b8; font-size: 14px;">Modo CroxyProxy Activo</span>
+        </div>
+        <iframe id="embeddedProxyFrame"></iframe>
+    </div>
+
+    <script>
+        let currentMode = 'proxy'; // 'proxy' o 'blank'
+
+        function switchMode(mode) {
+            currentMode = mode;
+            const btnProxy = document.getElementById('btnModeProxy');
+            const btnBlank = document.getElementById('btnModeBlank');
+            const actionBtn = document.getElementById('actionBtn');
+
+            if (mode === 'proxy') {
+                btnProxy.classList.add('active');
+                btnBlank.classList.remove('active');
+                actionBtn.innerText = "Iniciar CroxyProxy";
+            } else {
+                btnBlank.classList.add('active');
+                btnProxy.classList.remove('active');
+                actionBtn.innerText = "Abrir en Modo Oculto (about:blank)";
+            }
+        }
+
+        function launchAction() {
+            const rawUrl = document.getElementById('targetUrl').value.trim();
+            if(!rawUrl) {
+                alert("Por favor, introduce una URL válida.");
+                return;
+            }
+
+            let formattedUrl = rawUrl;
+            if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
+                formattedUrl = 'https://' + formattedUrl;
+            }
+
+            if (currentMode === 'proxy') {
+                // Opción 1: Abrir el proxy integrado dentro de esta misma web usando un servicio de iframe abierto o la URL directa
+                document.getElementById('homeView').style.display = 'none';
+                document.getElementById('proxyView').classList.add('active');
+                document.getElementById('embeddedProxyFrame').src = formattedUrl;
+            } else {
+                // Opción 2: Abrir en pestaña oculta about:blank con camuflaje
+                let stealthWindow = window.open('about:blank', '_blank');
+                
+                if(!stealthWindow || stealthWindow.closed || typeof stealthWindow.closed == 'undefined') {
+                    alert("Las ventanas emergentes (pop-ups) están bloqueadas. Habilítalas en tu navegador.");
+                    return;
+                }
+
+                let doc = stealthWindow.document;
+                doc.open();
+                doc.write(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Google Classroom</title>
+                        <link rel="icon" href="https://ssl.gstatic.com/classroom/ic_product_classroom_32.png">
+                        <style>
+                            body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; }
+                            iframe { width: 100%; height: 100%; border: none; }
+                        </style>
+                    </head>
+                    <body>
+                        <iframe src="${formattedUrl}"></iframe>
+                    </body>
+                    </html>
+                `);
+                doc.close();
+            }
+        }
+
+        function goBackHome() {
+            document.getElementById('proxyView').classList.remove('active');
+            document.getElementById('homeView').style.display = 'block';
+            document.getElementById('embeddedProxyFrame').src = '';
+        }
+    </script>
+
+</body>
+</html>
