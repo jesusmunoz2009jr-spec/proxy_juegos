@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Web</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- MÓDULO DE AUTENTICACIÓN -->
+  <div id="auth-container" class="card">
+    <h2 id="auth-title">Iniciar Sesión</h2>
+    <form id="auth-form">
+      <input type="text" id="username" placeholder="Usuario" required>
+      <input type="password" id="password" placeholder="Contraseña" required>
+      <button type="submit" id="auth-btn">Entrar</button>
+    </form>
+    <p class="toggle-text">
+      <span id="toggle-msg">¿No tienes cuenta?</span> 
+      <a href="#" id="toggle-auth">Regístrate aquí</a>
+    </p>
+  </div>
+
+  <!-- PANEL PRINCIPAL (OCULTO HASTA INICIAR SESIÓN) -->
+  <div id="app-container" class="hidden">
+    
+    <header class="navbar">
+      <div class="logo">PortalHub</div>
+      <nav>
+        <button onclick="showTab('busqueda')">Buscador</button>
+        <button onclick="showTab('juegos')">Juegos</button>
+        <button onclick="showTab('pelis')">Películas</button>
+        <button class="blank-btn" onclick="openAboutBlank()">Abrir en about:blank</button>
+      </nav>
+      <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+    </header>
+
+    <main class="content">
+      
+      <!-- SECCIÓN BUSCADOR (DUCKDUCKGO) -->
+      <section id="tab-busqueda" class="tab-content active">
+        <h2>Buscador Web</h2>
+        <div class="search-box">
+          <input type="text" id="search-query" placeholder="Buscar...">
+          <button onclick="searchWeb()">Buscar</button>
+        </div>
+        <!-- Iframe configurado con DuckDuckGo -->
+        <iframe id="search-frame" src="https://duckduckGo.com/" style="width: 100%; height: 500px; border: none; margin-top: 15px;"></iframe>
+      </section>
+
+      <!-- SECCIÓN JUEGOS -->
+      <section id="tab-juegos" class="tab-content">
+        <h2>Catálogo de Juegos</h2>
+        <div class="grid">
+          <div class="card-item">
+            <h3>Juego 1 (2048)</h3>
+            <iframe src="https://play2048.co/" loading="lazy"></iframe>
+          </div>
+          <div class="card-item">
+            <h3>Juego 2 (Hextris)</h3>
+            <iframe src="https://hextris.io/" loading="lazy"></iframe>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECCIÓN PELÍCULAS/MEDIOS -->
+      <section id="tab-pelis" class="tab-content">
+        <h2>Reproductor de Medios</h2>
+        <div class="grid">
+          <div class="card-item">
+            <h3>Video / Tráiler Ejemplo</h3>
+            <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
